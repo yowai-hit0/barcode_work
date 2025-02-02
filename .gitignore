@@ -1,5 +1,7 @@
 venv
+*.jar
 javase-3.5.0.jar
 core-3.5.0.jar
 jcommander-1.82.jar
 encryption_key.key
+pyztec-main
