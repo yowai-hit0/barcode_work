@@ -1,25 +1,37 @@
+import subprocess
 import os
-from pyzxing import BarCodeReader
 
-def decode_maxicode(image_path):
+def decode_maxicode_with_docker(image_path, docker_image="zxing-decoder"):
+    """
+    Decodes a MaxiCode using a Dockerized ZXing setup.
+    Parameters:
+        - image_path (str): Path to the MaxiCode image file to decode.
+        - docker_image (str): Name of the Docker image containing ZXing.
+    Returns:
+        - Decoded result as a string or an error message if decoding fails.
+    """
     # Ensure the file exists
     if not os.path.exists(image_path):
         return f"Error: File '{image_path}' not found."
 
-    # Initialize the barcode reader
-    reader = BarCodeReader()
-
     try:
-        # Decode the MaxiCode from the image file
-        result = reader.decode(image_path)
+        # Run the Docker command to decode the MaxiCode
+        command = [
+            "docker", "run", "--rm", "-v",
+            f"{os.path.abspath(os.path.dirname(image_path))}:/data",
+            docker_image, f"/data/{os.path.basename(image_path)}"
+        ]
+        result = subprocess.run(command, capture_output=True, text=True)
+        # print(result)
+        # Check for errors
+        if result.returncode != 0:
+            return f"Error: {result.stderr.strip()}"
 
-        # Check if the decoding was successful
-        if result:
-            # Return the decoded data (MaxiCode content)
-            return result[0]['parsed']
-        else:
-            return "Error: No MaxiCode detected in the image."
+        # Return the decoded result
+        return result.stdout.strip()
 
+    except FileNotFoundError:
+        return "Error: Docker is not installed or not accessible from this script."
     except Exception as e:
         return f"Error: {str(e)}"
 
@@ -28,7 +40,7 @@ if __name__ == "__main__":
     image_path = "./real-world-codes/maxicode-example.png"  # Replace with your MaxiCode image path
 
     # Decode the MaxiCode
-    decoded_output = decode_maxicode(image_path)
+    decoded_output = decode_maxicode_with_docker(image_path)
 
     # Print the result
     print(decoded_output)
