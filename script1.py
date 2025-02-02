@@ -14,7 +14,7 @@ except FileNotFoundError:
 # Step 2: Decode the Secure PDF417 barcode
 try:
     reader = BarCodeReader()
-    result = reader.decode("pdf417_code")
+    result = reader.decode("secure_pdf417.png")
 
     if not result:
         print("No barcodes detected. Ensure the image contains a valid Secure PDF417 barcode.")
